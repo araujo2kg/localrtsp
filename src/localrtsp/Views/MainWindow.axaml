@@ -1,0 +1,211 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:localrtsp.ViewModels"
+    x:Class="localrtsp.Views.MainWindow"
+    x:DataType="vm:MainViewModel"
+    Title="localrtsp"
+    Icon="/Assets/localrtsp.ico"
+    Width="900"
+    Height="850"
+    MinWidth="650"
+    MinHeight="600">
+    <ScrollViewer>
+        <StackPanel Margin="28" Spacing="18">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="5">
+                    <TextBlock
+                        Text="localrtsp"
+                        FontSize="30"
+                        FontWeight="Bold" />
+                    <TextBlock Classes="secondary" Text="A camera stream, without the camera network." />
+                </StackPanel>
+
+
+                <Border
+                    Grid.Column="1"
+                    Background="{DynamicResource SurfaceBrush}"
+                    CornerRadius="8"
+                    Padding="16,10"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Text="{Binding Status}"
+                        Classes="status"
+                        Classes.error="{Binding IsError}"
+                        Classes.running="{Binding IsRunning}"
+                        Classes.transition="{Binding IsTransitioning}"
+                        FontWeight="SemiBold" />
+                </Border>
+            </Grid>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="section" Text="Local endpoint" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <TextBox
+                            Text="{Binding Url}"
+                            IsReadOnly="True"
+                            FontFamily="Consolas"
+                            AutomationProperties.Name="RTSP URL" />
+                        <Button
+                            Grid.Column="1"
+                            Content="{Binding CopyLabel}"
+                            Command="{Binding CopyCommand}" />
+                    </Grid>
+
+
+                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                    <TextBlock Classes="secondary" Text="{Binding ActiveDescription}" />
+                    <TextBlock
+                        Classes="secondary"
+                        Text="Loopback only. Other applications on this machine can connect while the session is active."
+                        FontSize="12" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="14" IsEnabled="{Binding IsEditable}">
+                    <TextBlock Classes="section" Text="Source &amp; output" />
+                    <TextBlock Classes="secondary" Text="Edits are pending until you select Start or Apply &amp; Restart." />
+                    <ComboBox
+                        ItemsSource="{Binding Sources}"
+                        SelectedIndex="{Binding SourceIndex}"
+                        AutomationProperties.Name="Source kind" />
+                    <StackPanel IsVisible="{Binding IsColor}" Spacing="6">
+                        <TextBlock Text="Frame color (#RRGGBB)" />
+                        <TextBox
+                            Text="{Binding Color}"
+                            Watermark="#000000"
+                            AutomationProperties.Name="Frame color" />
+                    </StackPanel>
+
+
+                    <StackPanel IsVisible="{Binding IsFile}" Spacing="6">
+                        <TextBlock Text="Source file" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <TextBox
+                                Text="{Binding FilePath}"
+                                Watermark="Select a local image or video"
+                                AutomationProperties.Name="Source file" />
+                            <Button
+                                Grid.Column="1"
+                                Content="Browse..."
+                                Command="{Binding BrowseCommand}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <CheckBox
+                        IsVisible="{Binding IsVideo}"
+                        Content="Loop playback"
+                        IsChecked="{Binding Loop}" />
+                    <StackPanel IsVisible="{Binding IsCamera}" Spacing="6">
+                        <TextBlock Text="Camera device" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <ComboBox
+                                ItemsSource="{Binding Cameras}"
+                                SelectedItem="{Binding SelectedCamera}"
+                                AutomationProperties.Name="Camera device" />
+                            <Button
+                                Grid.Column="1"
+                                Content="Refresh"
+                                Command="{Binding RefreshCamerasCommand}" />
+                        </Grid>
+
+
+                        <TextBlock Classes="secondary" Text="Capture format is negotiated with the camera; output is scaled independently." />
+                    </StackPanel>
+
+
+                    <StackPanel IsVisible="{Binding IsFault}" Spacing="6">
+                        <TextBlock
+                            Foreground="{DynamicResource WarningBrush}"
+                            Text="Fault simulation: accepts TCP connections but never responds to RTSP requests."
+                            TextWrapping="Wrap" />
+                        <TextBlock Text="Close each stalled connection after (seconds)" />
+                        <NumericUpDown
+                            Minimum="1"
+                            Maximum="300"
+                            Increment="1"
+                            Value="{Binding StallSeconds}"
+                            AutomationProperties.Name="Stall seconds" />
+                    </StackPanel>
+
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="16"
+                        IsVisible="{Binding !IsFault}">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Output resolution" />
+                            <ComboBox
+                                ItemsSource="{Binding Resolutions}"
+                                SelectedItem="{Binding Resolution}"
+                                AutomationProperties.Name="Resolution" />
+                        </StackPanel>
+
+
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Text="Frames per second" />
+                            <ComboBox
+                                ItemsSource="{Binding FrameRates}"
+                                SelectedItem="{Binding Fps}"
+                                AutomationProperties.Name="FPS" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button
+                    Classes="primary"
+                    Content="Start"
+                    Command="{Binding StartCommand}" />
+                <Button Content="Stop" Command="{Binding StopCommand}" />
+                <Button Content="Apply &amp; Restart" Command="{Binding ApplyCommand}" />
+                <ProgressBar
+                    IsIndeterminate="True"
+                    IsVisible="{Binding IsBusy}"
+                    Width="90"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+
+
+            <Expander Header="Dependencies" HorizontalAlignment="Stretch">
+                <StackPanel
+                    Spacing="8"
+                    IsEnabled="{Binding IsEditable}"
+                    Margin="0,12">
+                    <TextBlock Classes="secondary" Text="Leave blank to use bundled tools or PATH. No downloads occur at startup." />
+                    <TextBlock Text="FFmpeg executable" />
+                    <TextBox
+                        Text="{Binding FFmpegPath}"
+                        Watermark="Automatic discovery"
+                        AutomationProperties.Name="FFmpeg path" />
+                    <TextBlock Text="MediaMTX executable" />
+                    <TextBox
+                        Text="{Binding MediaMtxPath}"
+                        Watermark="Automatic discovery"
+                        AutomationProperties.Name="MediaMTX path" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Diagnostic logs" HorizontalAlignment="Stretch">
+                <TextBox
+                    Text="{Binding LogText}"
+                    IsReadOnly="True"
+                    AcceptsReturn="True"
+                    TextWrapping="NoWrap"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    Height="200"
+                    Margin="0,12"
+                    AutomationProperties.Name="Diagnostic logs" />
+            </Expander>
+
+            <TextBlock
+                Classes="secondary"
+                FontSize="12"
+                Text="Closing localrtsp stops its stream and releases its local endpoint. No background service." />
+        </StackPanel>
+    </ScrollViewer>
+</Window>
