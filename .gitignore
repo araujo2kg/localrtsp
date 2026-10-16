@@ -410,6 +410,8 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+# Personal workspace colors and editor preferences
+/.vscode/settings.json
 
 # Local History for Visual Studio Code
 .history/
@@ -426,3 +428,20 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# localrtsp generated assets
+/tools/
+/artifacts/
+**/.avalonia-build-tasks/
+**/TestResults/
+*.log
+
+# Local environment overrides and editor caches
+.env
+.env.*
+!.env.example
+!.env.sample
+*.lscache
+Thumbs.db
+Desktop.ini
+.DS_Store
