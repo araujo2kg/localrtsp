@@ -1,0 +1,19 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore dependencies
+        run: dotnet restore localrtsp.sln
+      - name: Build
+        run: dotnet build localrtsp.sln --no-restore
+      - name: Test
+        run: dotnet test tests/localrtsp.Tests/localrtsp.Tests.csproj --no-build --no-restore --blame-hang --blame-hang-timeout 30s
